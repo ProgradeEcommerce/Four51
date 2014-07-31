@@ -1,0 +1,147 @@
+//
+// Products
+// --------------------------------------------------
+
+.panel-product-list {
+  &:extend(.panel-body all);
+  ul {
+    li  {
+      width: 100%;
+      a {
+        padding: .75em;
+        display: block;
+        text-decoration: none;
+        img {
+          margin: 0 auto 15px;
+        }
+      }
+      //** example swipe
+      .shortproduct-info {
+        background-color: rgba(0,0,0,.85);
+        color: #fff;
+        border-top: none;
+        position: absolute;
+        right: 0;
+        left: 0;
+        top:0;
+        bottom: 0;
+        z-index: 1;
+        padding: 10px;
+      }
+    }
+  }
+  .well {
+    margin: 2px;
+    padding: 0;
+  }
+}
+
+.product-image-large {
+  margin: 0 auto;
+  max-height: @fourfiveone-product-image-height;
+  max-width: 100%;
+}
+
+.product-variants {
+  //** make room for side color bar
+  padding-left: 1.5em;
+  .quantity-total-variants {
+    border: 1px solid @panel-default-border;
+    height: 52px;
+  }
+  p {
+    margin: 0;
+    padding: 10px 0;
+    font-size: @font-size-small;
+  }
+  ul{
+    &:extend(.clearfix all);
+    list-style-type: none;
+    padding: 1.5em 0;
+    li {
+      margin: 2px 0;
+      @media (max-width: @screen-sm-min) {
+        .row {
+          margin-top: 15px;
+          div {
+            padding: 0;
+          }
+        }
+        [class*="col-"] {
+          margin: 5px 0;
+        }
+      }
+      .btn {
+        height: 52px;
+      }
+    }
+  }
+  a {
+    position: relative;
+    display: block;
+    min-height: 52px;
+    padding: .4em;
+    margin: 0;
+    background-color: @panel-default-heading-bg;
+    text-decoration: none;
+    transition: all .3s ease-out;
+    //** color bar on left side :: hover :: arrow
+    &:before{
+      position: absolute;
+      left: -1.5em;
+      top:0;
+      content: '';
+      font-weight: bold;
+      background-color: @brand-danger;
+      height: 100%;
+      width: 1em;
+      padding-top: 1em;
+      line-height: 2em;
+      text-align: center;
+      font-weight: bold;
+    }
+    &:after{
+      position: absolute;
+      content: '';
+      border: .5em solid transparent;
+      left: -.5em;
+      top: 50%;
+      margin-top: -.5em;
+      transition: all .3s ease-out;
+    }
+    &:hover{
+      background: lighten(@panel-default-heading-bg, 2%);
+    }
+    &:hover:after{
+      left: -.5em;
+      border-left-color: @brand-danger;
+    }
+  }
+  //** is not like the others
+  .view-form-icon {
+    div {
+      margin-top: 0;
+    }
+  }
+}
+
+//== Miscellaneous
+
+.file-upload-required:after{
+  content:" Required";
+
+}
+
+.static-spec-panel-body {
+  padding-left:0;
+  padding-right:0;
+}
+
+.view-spec-form .col-sm-2 {padding: 6px 0;}
+.view-spec-form .col-sm-8 {padding: 0;}
+.view-spec-form .col-sm-2 {  background-color: @panel-default-heading-bg;
+  border: 1px solid @panel-default-border;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1;
+  text-align: center;}

@@ -1,0 +1,144 @@
+<div>
+    <loadingindicator ng-show="MasterProduct.CollectionList.length == 0 && MasterProduct.InactiveCollectionList.length == 0" tag="collections-loading" title="Please wait while we load all {{'proposals' | r}}"/>
+    <loadingindicator ng-show="adminLoadingIndicator" tag="collections-loading" title="Please wait while we update all {{'proposals' | r}}"/>
+    <div ng-show="MasterProduct.CollectionList.length > 0 || MasterProduct.InactiveCollectionList.length > 0">
+        <section class="container">
+            <div class="row" style="margin-bottom:10px;">
+                <div class="col-sm-6">
+                    <input placeholder="Search {{'Proposals' | rc}}" type="text" class="form-control" ng-model="keyword" typeahead="doc for doc in MasterProduct.CollectionDocuments | filter:$viewValue | limitTo:10" />
+                </div>
+                <div class="col-sm-3" style="margin-top:-35px;">
+                    <div class="row view-form-icon">
+                        <div class="col-md-6">
+                            <label>{{'Start' | r}} {{'Date' | r}}</label>
+                            <div class="btn btn-default btn-block btn-date hidden-lg hidden-md"
+                                 ng-click="$event.preventDefault();$event.stopPropagation();startopened = !startopened;"
+                                 style="margin:0; height:40px; padding-top:8px;">
+                                {{fromdate ? "" : "Tap"}}
+                                <span class="text-info">{{fromdate | date:'M/dd/yy'}}</span>
+                            </div>
+                            <input placeholder="{{'Start' | r}} {{'Date' | r}}" ng-model="fromdate"
+                                   ng-change="span = null;"
+                                   type="text"
+                                   class="form-control"
+                                   datepicker-popup="MM/dd/yy"
+                                   is-open="startopened"
+                                   min="minDate"/>
+                            <i class="fa fa-calendar"></i>
+                        </div>
+                        <div class="col-md-6">
+                            <label>{{'End' | r}} {{'Date' | r}}</label>
+                            <div class="btn btn-default btn-block btn-date hidden-lg hidden-md"
+                                 ng-click="$event.preventDefault();$event.stopPropagation();endopened = !startopened;"
+                                 style="margin:0; height:40px; padding-top:8px;">
+                                {{todate ? "" : "Tap"}}
+                                <span class="text-info">{{todate | date:'M/dd/yy'}}</span>
+                            </div>
+                            <input placeholder="{{'End' | r}} {{'Date' | r}}" ng-model="todate"
+                                   ng-change="span = null;"
+                                   type="text"
+                                   class="form-control"
+                                   datepicker-popup="MM/dd/yy"
+                                   is-open="endopened"
+                                   min="fromdate"/>
+                            <i class="fa fa-calendar"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="btn-group btn-group-justified">
+                        <div style="padding: 9px 12px;" ng-init="showActive = true" ng-click="showActive = true" class="btn btn-default btn-group" ng-class="{'active btn-primary':showActive}">Active <span class="badge">{{MasterProduct.CollectionList.length}}</span></div>
+                        <div style="padding: 9px 12px;" ng-click="showActive = false" class="btn btn-default btn-group" ng-class="{'active btn-primary':!showActive}">Inactive <span class="badge">{{MasterProduct.InactiveCollectionList.length}}</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section ng-show="showActive" class="container active-collections">
+            <div ng-show="!(MasterProduct.CollectionList.length > 0)" class="alert text-center alert-info" ng-class="{'alert-danger':(keyword || fromdate || todate) }">There are no <b>active</b> {{'proposals' | r}} {{keyword ? 'containing \"' + keyword + '\"' : ''}} {{((fromdate || todate)) ? 'within this date range' : ''}}.</div>
+            <table ng-show="MasterProduct.CollectionList.length > 0" class="table table-striped table-hover" style="background-color:#fff;">
+                <thead>
+                <tr>
+                    <th ng-click="sortBy = 'ExternalID'; reverse=!reverse">{{'Proposal' | r}} {{'Title' | r}} <i class="fa" ng-class="{'fa-long-arrow-down':!reverse, 'fa-long-arrow-up':reverse}" ng-show="sortBy == 'ExternalID'"></i></th>
+                    <th ng-click="sortBy = 'Specs.Name.Value'; reverse=!reverse">{{'Created By' | r}} <i class="fa" ng-class="{'fa-long-arrow-down':!reverse, 'fa-long-arrow-up':reverse}" ng-show="sortBy == 'Specs.Name.Value'"></i></th>
+                    <th ng-click="sortBy = 'Specs.DateLastUpdated.Value'; reverse=!reverse">{{'Date Last Updated' | r}} <i class="fa" ng-class="{'fa-long-arrow-down':!reverse, 'fa-long-arrow-up':reverse}" ng-show="sortBy == 'Specs.DateLastUpdated.Value'"></i></th>
+                    <th class="text-center" ng-click="sortBy = 'PageCount'; reverse=!reverse">{{'Page Count' | r}} <i class="fa" ng-class="{'fa-long-arrow-down':!reverse, 'fa-long-arrow-up':reverse}" ng-show="sortBy == 'PageCount'"></i></th>
+                    <!--<th class="text-center">Email/Print</th>-->
+                    <th class="text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="collection in filteredCollections = (MasterProduct.CollectionList | orderBy:sortBy:reverse | collectionFilter:keyword:MasterProduct.CollectionDocuments:DocumentNames | collectionDateRange:fromdate:todate)">
+                    <td><i ng-init="showPages = false" ng-click="showPages = !showPages" style="cursor:pointer;" class="fa" ng-class="{'fa-plus-circle':!showPages, 'fa-minus-circle':showPages}"></i><em> {{collection.ExternalID}}</em><br ng-show="showPages"/>
+                        <ol collapse="!showPages">
+                            <li ng-repeat="spec in collection.Specs" ng-if="spec.Name.indexOf('Page') == 0 && spec.Value != ''">
+                                <span ng-if="spec.Value.indexOf('CL') == 0">Cover Letter: {{collection.Specs['CoverLetterTitle'].Value}}</span>
+                                <span ng-if="spec.Value.indexOf('Div') == -1">{{DocumentNames[spec.Value].Name}}</span>
+                                <span ng-if="spec.Value.indexOf('Div') != -1">Divider Page: {{collection.Specs['DividerHeadline' + spec.Value.split('Div')[1]].Value}}</span>
+                            </li>
+                        </ol>
+                    </td>
+                    <td><b>{{collection.Specs['CreatedBy'].Value}}</b></td>
+                    <td><i class="fa fa-calendar"></i> {{collection.Specs['DateLastUpdated'].Value | dateFilter:'date'}}</td>
+                    <td class="text-center">{{collection.PageCount}}</td>
+                    <!--<td class="text-center">-->
+                        <!--<i class="fa fa-envelope" tooltip="{{collection.Specs['DownloadCountEmail'].Value}}" ng-if="+(collection.Specs['DownloadCountEmail'].Value) > 0"></i>-->
+                        <!--<span ng-if="+(collection.Specs['DownloadCountEmail'].Value) > 0 && +(collection.Specs['DownloadCountPrint'].Value) > 0"> & </span>-->
+                        <!--<i class="fa fa-print" tooltip="{{collection.Specs['DownloadCountPrint'].Value}}" ng-if="+(collection.Specs['DownloadCountPrint'].Value) > 0"></i>-->
+                        <!--<i class="fa fa-ban" ng-if="+(collection.Specs['DownloadCountEmail'].Value) == 0 && +(collection.Specs['DownloadCountPrint'].Value) == 0"></i>-->
+                    <!--</td>-->
+                    <td class="text-center">
+                        <i style="cursor:pointer; margin-right:5px;" class="fa fa-arrow-circle-down text-danger" tooltip-placement="left" tooltip="Deactivate {{'Proposal' | r}}" ng-click="pseudoDeleteCollection(collection)"></i>
+                        <i style="cursor:pointer; margin-right:5px;" class="fa fa-refresh text-info" tooltip-placement="left" tooltip="Refresh {{'Proposal' | r}}" ng-click="refreshCollection(collection)"></i>
+                        <i style="cursor:pointer; margin-left:5px;" class="fa fa-download text-success" tooltip-placement="left" tooltip="Download {{'Proposal' | r}}" ng-click="downloadPDF(collection)"></i>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+        <section ng-show="!showActive" class="container inactive-collections">
+            <div ng-show="!(MasterProduct.InactiveCollectionList.length > 0)" class="alert text-center alert-info" ng-class="{'alert-danger':(keyword || fromdate || todate) }">There are no <b>inactive</b> {{'proposals' | r}} {{keyword ? 'containing \"' + keyword + '\"' : ''}} {{((fromdate || todate)) ? 'within this date range' : ''}}.</div>
+            <table ng-show="MasterProduct.InactiveCollectionList.length > 0" class="table table-striped table-hover" style="background-color:#fff;">
+                <thead>
+                <tr>
+                    <th ng-click="sortBy = 'ExternalID'; reverse=!reverse">{{'Proposal' | r}} {{'Title' | r}} <i class="fa" ng-class="{'fa-long-arrow-down':!reverse, 'fa-long-arrow-up':reverse}" ng-show="sortBy == 'ExternalID'"></i></th>
+                    <th ng-click="sortBy = 'Specs.Name.Value'; reverse=!reverse">{{'Created By' | r}} <i class="fa" ng-class="{'fa-long-arrow-down':!reverse, 'fa-long-arrow-up':reverse}" ng-show="sortBy == 'Specs.Name.Value'"></i></th>
+                    <th ng-click="sortBy = 'Specs.DateLastUpdated.Value'; reverse=!reverse">{{'Date Last Updated' | r}} <i class="fa" ng-class="{'fa-long-arrow-down':!reverse, 'fa-long-arrow-up':reverse}" ng-show="sortBy == 'Specs.DateLastUpdated.Value'"></i></th>
+                    <th class="text-center" ng-click="sortBy = 'PageCount'; reverse=!reverse">{{'Page Count' | r}} <i class="fa" ng-class="{'fa-long-arrow-down':!reverse, 'fa-long-arrow-up':reverse}" ng-show="sortBy == 'PageCount'"></i></th>
+                    <!--<th class="text-center">Email/Print</th>-->
+                    <th class="text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="collection in filteredInactiveCollections = (MasterProduct.InactiveCollectionList | orderBy:sortBy:reverse | collectionFilter:keyword:MasterProduct.CollectionDocuments:DocumentNames | collectionDateRange:fromdate:todate)">
+                    <td><i ng-init="showPages = false" ng-click="showPages = !showPages" style="cursor:pointer;" class="fa" ng-class="{'fa-plus-circle':!showPages, 'fa-minus-circle':showPages}"></i><em> {{collection.ExternalID}}</em><br ng-show="showPages"/>
+                        <ul collapse="!showPages">
+                            <li ng-repeat="spec in collection.Specs | pagefilter">
+                                <span>{{$index}})</span>
+                                <span ng-if="spec.Value.indexOf('CL') == 0">Cover Letter</span>
+                                <span ng-if="spec.Value.indexOf('Div') == -1">{{DocumentNames[spec.Value].Name}}</span>
+                                <span ng-if="spec.Value.indexOf('Div') != -1">{{collection.Specs['DividerHeadline' + spec.Value.split('Div')[1]].Value}}</span>
+                            </li>
+                        </ul>
+                    </td>
+                    <td><b>{{collection.Specs['CreatedBy'].Value}}</b></td>
+                    <td><i class="fa fa-calendar"></i> {{collection.Specs['DateLastUpdated'].Value | dateFilter:'date'}}</td>
+                    <td class="text-center">{{collection.PageCount}}</td>
+                    <!--<td class="text-center">-->
+                        <!--<i class="fa fa-envelope" tooltip="{{collection.Specs['DownloadCountEmail'].Value}}" ng-if="+(collection.Specs['DownloadCountEmail'].Value) > 0"></i>-->
+                        <!--<span ng-if="+(collection.Specs['DownloadCountEmail'].Value) > 0 && +(collection.Specs['DownloadCountPrint'].Value) > 0"> & </span>-->
+                        <!--<i class="fa fa-print" tooltip="{{collection.Specs['DownloadCountPrint'].Value}}" ng-if="+(collection.Specs['DownloadCountPrint'].Value) > 0"></i>-->
+                        <!--<i class="fa fa-ban" ng-if="+(collection.Specs['DownloadCountEmail'].Value) == 0 && +(collection.Specs['DownloadCountPrint'].Value) == 0"></i>-->
+                    <!--</td>-->
+                    <td class="text-center">
+                        <i style="cursor:pointer; margin-right:5px;" class="fa fa-arrow-circle-up text-success" tooltip-placement="left" tooltip="Activate {{'Proposal' | r}}" ng-click="activateCollection(collection)"></i>
+                        <i style="cursor:pointer; margin-right:5px;" class="fa fa-trash-o text-danger" tooltip-placement="left" tooltip="Delete {{'Proposal' | r}}" ng-click="deleteCollection(collection)"></i>
+                        <i style="cursor:pointer; margin-left:5px;" class="fa fa-download text-info" tooltip-placement="left" tooltip="Download {{'Proposal' | r}}" ng-click="downloadPDF(collection)"></i>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</div>

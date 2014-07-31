@@ -1,0 +1,40 @@
+//
+// Categories
+// --------------------------------------------------
+
+.panel-category-list {
+  &:extend(.panel-body all);
+  h3 {
+    margin-top: 0;
+  }
+  p {
+    font-size: 12px;
+  }
+  ul {
+    li {
+      .well {
+        margin: 2px;
+        padding: 0;
+        min-height: (@fourfiveone-category-image-height + 60%);
+      }
+      a {
+        padding: .75em;
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        img {
+          margin: 0 auto;
+          max-height: @fourfiveone-category-image-height;
+        }
+        //** no image available
+        .empty {
+          &:extend(.panel-default all);
+          min-height: @fourfiveone-category-image-height;
+          i.fa {
+            padding-top: (@fourfiveone-category-image-height / 2);
+          }
+        }
+      }
+    }
+  }
+}

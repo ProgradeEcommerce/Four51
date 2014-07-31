@@ -1,0 +1,121 @@
+<div class="row" ng-show="!LoadingDocuments">
+    <div class="col-md-11">
+        <div ng-show="filteredDocuments.length == 0 && DocumentList.length > 0" class="alert alert-info">No {{'document' | r}}s match your filter values.</div>
+        <div ng-show="(DocumentList.length == Collection.SelectedDocuments.length) && DocumentList.length > 0" class="alert alert-info">All {{'document' | r}}s have been added to this {{'collection' | rc}}.</div>
+        <div style="padding:15px 0; background-color:#FFF;" class="hidden-xs">
+            <div class="col-sm-6"><b>{{'Document' | r}} Name</b></div>
+            <div class="col-xs-6 col-md-4"><b>{{'Type' | r}}</b></div>
+            <div class="col-xs-6 col-md-2"><b>{{'Last Updated' | r}}</b></div>
+            <div style="clear:both;"></div>
+        </div>
+        <div class="document-list-item" ng-init="more = false" ng-class="{'selected':more || document.Preview || document.Editing}" hover-intent="more = true" ng-mouseleave="more = false" ng-repeat="document in filteredDocuments = (DocumentList | categoryfilter:selectedCategories | favDocs:favoriteDocs | filter:VariablesStore.keyword | dateRange:VariablesStore.fromdate:VariablesStore.todate | paginate:(settings.currentPage-1) * settings.pageSize | limitTo:settings.pageSize)" collapse="document.Selected">
+            <div class="row">
+                <div class="col-sm-6">
+                    <p class="document-title">
+                        <i class="fa text-muted" ng-show="FavoriteDocumentsEnabled" ng-class="{'fa-star': FavoriteDocuments.indexOf(document.ExternalID) > -1, 'fa-star-o': FavoriteDocuments.indexOf(document.ExternalID) == -1}" ng-click="updateFavoriteDocuments(document)" tooltip-placement="right" tooltip="{{(document.Favorite) ? 'Remove Favorite' : 'Favorite' | r}}"></i>
+                        {{document.Name}}
+                    </p>
+                </div>
+                <div class="col-xs-6 col-md-4">
+                    <p class="category-label">
+                        <small ng-class="{'label-primary':document.StaticSpecGroups.Category.Specs[0].Value == DocumentList.Filters[0],'label-warning':document.StaticSpecGroups.Category.Specs[0].Value == DocumentList.Filters[1],'label-info':document.StaticSpecGroups.Category.Specs[0].Value == DocumentList.Filters[2],'label-danger':document.StaticSpecGroups.Category.Specs[0].Value == DocumentList.Filters[3],'label-default':(document.StaticSpecGroups.Category.Specs[0].Value == DocumentList.Filters[4]) || (document.StaticSpecGroups.Category.Specs[0].Value == DocumentList.Filters[5])}"
+                               class="label" >{{document.StaticSpecGroups.Category.Specs[0].Value}}</small>
+                    </p>
+
+                </div>
+                <div class="col-xs-6 col-md-2">
+                    <p class="category-label">
+                        <small>{{document.StaticSpecGroups.DateLastUpdated.Specs[0].Value}}</small>
+                    </p>
+
+                </div>
+            </div>
+            <div class="more-actions" ng-class="{'show':more || document.Preview || document.Editing}" style="margin-top:10px;">
+                <div class="text-center">
+                    <i class="fa text-muted fa-2x" ng-class="{'fa-eye':!document.Preview, 'fa-eye-slash':document.Preview}" ng-click="document.Preview = !document.Preview; document.Editing = false" tooltip-placement="left" tooltip="{{('Preview' | r) + ' ' + ('Document' | r)}}"></i>
+                    <i class="fa fa-download text-muted fa-2x" ng-show="objectLength(document.Specs) != 0 && !document.Editing" ng-click="document.Editing = true; document.Preview = false" tooltip-placement="left" tooltip="{{('Download' | r) + ' ' + ('Document' | r)}}"></i>
+                    <i class="fa fa-download text-muted fa-2x" ng-show="objectLength(document.Specs) == 0 || document.Editing" ng-click="downloadIndPDF(document)" tooltip-placement="left" tooltip="{{('Download' | r) + ' ' + ('Document' | r)}}"></i>
+                    <i class="fa fa-shopping-cart text-muted fa-2x" ng-show="objectLength(document.Specs) != 0 && !document.Editing" ng-click="document.Editing = true; document.Preview = false" tooltip-placement="left" tooltip="{{'Add ' + ('Document' | r) + ' to ' + ('Cart' | r)}}"></i>
+                    <i class="fa fa-shopping-cart text-muted fa-2x" ng-show="objectLength(document.Specs) == 0 || document.Editing" ng-click="addIndDocToOrder(document)" tooltip-placement="left" tooltip="{{'Add ' + ('Document' | r) + ' to ' + ('Cart' | r)}}"></i>
+                    <i class="fa fa-arrow-circle-o-down text-muted fa-2x" ng-class="{'fa-rotate-90':!document.Editing}" ng-show="objectLength(document.Specs) != 0" ng-click="document.Editing = !document.Editing; document.Preview = false" tooltip-placement="left" tooltip="{{'Edit ' + ('Document' | r)}}"></i>
+                    <i class="fa fa-plus-circle text-muted fa-2x" ng-show="objectLength(document.Specs) == 0 || document.Editing" ng-click="updateCollection(document)" tooltip-placement="left" tooltip="{{'Add ' + ('Document' | r) + ' to ' + ('Proposal' | r)}}"></i>
+                </div>
+            </div>
+            <div class="row" collapse="!document.Preview">
+                <div class="container">
+                    <hr/>
+                    <div class="document-preview">
+                        <figure>
+                            <img ng-src="{{document.LargeImageUrl}}" width="100%" />
+                        </figure>
+                    </div>
+                </div>
+            </div>
+            <div class="document-extra-specs" collapse="!document.Editing">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div ng-repeat="spec in document.Specs" class="view-form-icon" ng-if="spec.Name != 'Photo' && isEven($index)">
+                            <div ng-if="spec.Name.toLowerCase().indexOf('email') == -1 && spec.Name.toLowerCase().indexOf('phone') == -1">
+                                <label>{{spec.Label}}</label>
+                                <input type="text" class="form-control" ng-model="Collection.Specs[spec.Name].Value" />
+                                <i class="fa fa-pencil-square"></i>
+                            </div>
+                            <div ng-if="spec.Name.toLowerCase().indexOf('email') > -1">
+                                <label>{{spec.Label}}</label>
+                                <input type="email" class="form-control" ng-model="Collection.Specs[spec.Name].Value" ng-pattern="/^(([^<>()[\]\\.,;:\s@\']+(\.[^<>()[\]\\.,;:\s@\']+)*)|(\'.+\'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/" />
+                                <i class="fa fa-envelope"></i>
+                            </div>
+                            <div ng-if="spec.Name.toLowerCase().indexOf('phone') > -1">
+                                <label>{{spec.Label}}</label>
+                                <input type="text" class="form-control" ng-model="Collection.Specs[spec.Name].Value" ui-mask="(999) 999-9999" />
+                                <i class="fa fa-phone-square"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div ng-repeat="spec in document.Specs" class="view-form-icon" ng-if="spec.Name != 'Photo'  && !isEven($index)">
+                            <div ng-if="spec.Name.toLowerCase().indexOf('email') == -1 && spec.Name.toLowerCase().indexOf('phone') == -1">
+                                <label>{{spec.Label}}</label>
+                                <input type="text" class="form-control" ng-model="Collection.Specs[spec.Name].Value" />
+                                <i class="fa fa-pencil-square"></i>
+                            </div>
+                            <div ng-if="spec.Name.toLowerCase().indexOf('email') > -1">
+                                <label>{{spec.Label}}</label>
+                                <input type="email" class="form-control" ng-model="Collection.Specs[spec.Name].Value" ng-pattern="/^(([^<>()[\]\\.,;:\s@\']+(\.[^<>()[\]\\.,;:\s@\']+)*)|(\'.+\'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/" />
+                                <i class="fa fa-envelope"></i>
+                            </div>
+                            <div ng-if="spec.Name.toLowerCase().indexOf('phone') > -1">
+                                <label>{{spec.Label}}</label>
+                                <input type="text" class="form-control" ng-model="Collection.Specs[spec.Name].Value" ui-mask="(999) 999-9999" />
+                                <i class="fa fa-phone-square"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div ng-repeat="spec in document.Specs" class="view-form-icon" ng-if="spec.Name == 'Photo'">
+                    <div>
+                        <label>{{spec.Label}}</label>
+                        <customfilefield customfield="spec"></customfilefield>
+                    </div>
+                </div>
+                <div style="clear:both;"></div>
+            </div>
+        </div>
+        <pagination page="settings.currentPage" max-size="8" rotate="false" boundary-links="true" total-items="(DocumentList | categoryfilter:selectedCategories | favDocs:favoriteDocs | filter:VariablesStore.keyword | dateRange:VariablesStore.fromdate:VariablesStore.todate).length"
+                    items-per-page="settings.pageSize" direction-links="false" ng-show="(DocumentList | categoryfilter:selectedCategories | favDocs:favoriteDocs | filter:VariablesStore.keyword | dateRange:VariablesStore.fromdate:VariablesStore.todate).length > 8"></pagination>
+        <div class="navbar-fixed-bottom hidden-md hidden-lg">
+            <ul>
+                <li style="width:50%;">
+                    <button class="btn btn-default" ng-click="VariablesStore.mobileView = '0'">
+                        <span>{{'Change' | r}} {{'filters' | rc}} {{window.outerWidth}}</span>
+                    </button>
+                </li>
+                <li>
+                    <button class="btn btn-success" ng-click="VariablesStore.mobileView = '2'">
+                        <span>{{'View' | r}} {{'collection' | rc}} {{window.outerWidth}}</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

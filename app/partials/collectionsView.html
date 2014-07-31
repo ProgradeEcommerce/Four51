@@ -1,0 +1,82 @@
+<section class="container proposal-view">
+    <loadingindicator ng-show="loadingCollectionList" tag="collections-loading" />
+    <h1 class="text-center"><i class="fa fa-book"></i> {{'Proposals' | rc}}</h1>
+    <div class="row" style="margin-bottom:15px;">
+        <div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+            <div class="collection-toolbar row">
+                <div class="col-sm-4 text-center">
+                    <a class="btn btn-success btn-block" ng-click="newCollection()"><i class="fa fa-plus-circle"></i> Create new</a>
+                </div>
+                <div class="col-sm-8 text-center">
+                    <div class="row">
+                        <div class="col-xs-7">
+                            <input class="form-control" placeholder="Search {{'Proposals' | r}}..." ng-model="keyword" style="min-height:0;" typeahead="doc for doc in MasterProduct.CollectionDocuments | filter:$viewValue | limitTo:10" />
+                        </div>
+                        <div class="col-xs-5">
+                            <div style="display:inline; padding:7px 12px;" class="btn btn-default" ng-click="updateSortBy(sortBy)" tooltip-placement="left" tooltip="{{'Reverse' | r}}"><i class="fa fa-long-arrow-down" ng-class="{'fa-long-arrow-up':!reverse}"></i></div>
+                            <div style="display:inline;" class="dropdown" dropdown is-open="status.isopen">
+                                <div class="btn btn-default dropdown-toggle" ng-disabled="disabled">
+                                    Sort <span class="caret"></span>
+                                </div>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li ng-class="{'active': sortBy == 'ExternalID'}"><a ng-click="updateSortBy('ExternalID')">{{'Title' | rc}} </a></li>
+                                    <li ng-class="{'active': sortBy == 'DateLastUpdated'}"><a ng-click="updateSortBy('DateLastUpdated')">{{'Date Last Updated' | rc}} </a></li>
+                                    <li ng-class="{'active': sortBy == 'PageCount'}"><a ng-click="updateSortBy('PageCount')">{{'Page Count' | rc}}</a></li>
+                                    <li class="divider"></li>
+                                    <li><a ng-click="updateSortBy('')">Clear Sorting</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row collection-variant-list" style="position:relative;">
+        <div ng-repeat="collection in collectionlist = (MasterProduct.CollectionList | collectionFilter:keyword:MasterProduct.CollectionDocuments:DocumentNames | orderBy:sortBy:reverse)" class="col-lg-3 col-md-4 col-sm-6" ng-init="collection.DocsCollapse = true">
+                <div class="panel panel-default panel-collection">
+                    <div class="panel-heading">
+                        <h4 class="panel-title" style="padding:10px 15px;"><i style="cursor:pointer;" class="fa fa-trash-o pull-left" ng-click="deleteCollection(collection)" tooltip-placement="right" tooltip="{{'Delete' | r}}"></i> <i style="cursor:pointer;" class="fa fa-pencil-square pull-right" ng-click="editCollection(collection)" tooltip-placement="left" tooltip="{{'Edit' | r}}"></i><div style="margin-left:20px; margin-right:20px;">{{collection.ExternalID}}</div></h4>
+                    </div>
+                    <div class="panel-body">
+                        <p>
+                            <span class="pull-left">
+                                <b><i class="fa fa-calendar"></i></b>
+                                {{collection.Specs['DateLastUpdated'].Value | dateFilter:'date'}}
+                            </span>
+                            <span class="pull-right">
+                                <b><i class="fa fa-clock-o"></i></b>
+                                {{collection.Specs['DateLastUpdated'].Value | dateFilter:'time'}}
+                            </span>
+                        </p>
+                        <hr/>
+                        <p class="text-center"><b>Documents Used ({{collection.PageCount}})</b></p>
+                        <div style="height:120px; overflow-y:scroll;">
+                            <ul style="padding-left:20px;">
+                                <li ng-repeat="spec in collection.Specs | pagefilter">
+                                    <span>{{$index + 1}})</span>
+                                    <span ng-if="spec.Value.indexOf('Div') == -1 && spec.Value.indexOf('CL') == -1">{{DocumentNames[spec.Value].Name}}</span>
+                                    <span ng-if="spec.Value.indexOf('CL') == 0">Cover Letter: {{collection.Specs['CoverLetterTitle'].Value}}</span>
+                                    <span ng-if="spec.Value.indexOf('Div') != -1 && spec.Value.indexOf('CL') == -1">Divider Page: {{collection.Specs['DividerHeadline' + spec.Value.split('Div')[1]].Value}}</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="btn-group btn-group-justified">
+                                <div class="btn btn-success-light" ng-click="downloadPDF(collection)">Download PDF</div>
+                                <div class="btn btn-primary-light" ng-click="orderCollection(collection)">Order {{'Collection' | rc}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+        <div class="col-md-6 col-md-offset-3" ng-show="collectionlist.length == 0">
+            <div class="alert alert-info text-center" ng-show="keyword">
+                Your search on {{keyword}} returned no results.
+            </div>
+            <div class="alert alert-info text-center" ng-show="!keyword">
+                No {{'Proposals' | r}} have been created.
+            </div>
+        </div>
+    </div>
+</section>

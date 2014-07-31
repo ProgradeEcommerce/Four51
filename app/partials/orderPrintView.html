@@ -1,0 +1,260 @@
+<section class="order-print-view">
+    <div class="order-print-view-header">
+        <div>
+            <figure>
+                <img class="branding-print-view-logo" ng-src="{{user.Company.LogoUrl}}" />
+            </figure>
+            <h3>{{user.Company.Name}}</h3>
+        </div>
+        <div>
+            <h5>
+                {{'Created On' | r}} {{order.DateCreated | date:'short'}}
+            </h5>
+        </div>
+    </div>
+    <div>
+        <div>
+            <div class="order-print-view-details">
+                <div>
+                    <h3>
+                        {{'Order' | r}} {{'Details' | r}}
+                    </h3>
+                </div>
+                <div>
+                    <p ng-show="order.DateSubmitted">{{'Date' | r}} {{'Submitted' | r}}: <span style="float:right;">{{order.DateSubmitted | date:'short'}}</span></p>
+                    <p>{{'Status' | r}}: <span style="float:right;">{{order.StatusText}}</span></p>
+                    <p ng-show="order.DateCompleted">{{'Date' | r}} {{'Completed' | r}}: <span style="float:right;">{{order.DateCompleted | date:'short'}}</span></p>
+                    <p ng-show="order.FromUserFirstName || order.FromUserLastName">{{'Created By' | r}}: <span style="float:right;">{{order.FromUserFirstName + ' ' + order.FromUserLastName}}</span></p>
+                    <p ng-show="order.Comments">{{'Comments' | r}}: <span style="float:right;">{{order.Comments}}</span></p>
+                    <p ng-show="orderCostCenter">{{'Cost Center' | r}}: <span style="float:right;">{{(order.LineItems.length == 1) && order.LineItems[0].CostCenter || null}}</span></p>
+                    <p>{{'Payment' | r}} {{'Method' | r}}: <span style="float:right;">{{order.PaymentMethodText}} <strong ng-show="order.CreditCard.Type">{{':' + order.CreditCard.DisplayName}}</strong></span></p>
+                    <address ng-show="order.ShipAddress">
+                        <span class="text-primary"><strong>{{'Ship to' | r}}</strong></span><br />
+                        <span ng-show="order.LineItems[0].ShipFirstName || order.LineItems[0].ShipLastName">{{order.LineItems[0].ShipFirstName}} {{order.LineItems[0].ShipLastName}}</span>
+                        <span ng-show="!order.LineItems[0].ShipFirstName || !order.LineItems[0].ShipLastName">{{order.ShipAddress.FirstName}} {{order.ShipAddress.LastName}}</span>
+                        <br />{{order.ShipAddress.Street1}}<br>
+                        {{order.ShipAddress.Street2}}<br ng-show="order.ShipAddress.Street2">
+                        {{order.ShipAddress.City}}, {{order.ShipAddress.State}} {{order.ShipAddress.Zip}}
+                        <div ng-if="order.ShipAddress.Country != 'US'">{{order.ShipAddress.Country}}</div>
+                    </address><br />
+                    <address ng-show="order.BillAddress">
+                        <span class="text-primary"><strong>{{'Bill to' | r}}</strong></span><br />
+                        <span ng-show="order.BillFirstName || order.BillLastName">{{order.BillFirstName}} {{order.BillLastName}}</span>
+                        <span ng-show="!order.BillFirstName || !order.BillLastName">{{order.BillAddress.FirstName}} {{order.BillAddress.LastName}}</span>
+                        <br />{{order.BillAddress.Street1}}<br>
+                        {{order.BillAddress.Street2}}<br ng-show="order.BillAddress.Street2">
+                        {{order.BillAddress.City}}, {{order.BillAddress.State}} {{order.BillAddress.Zip}}
+                        <div ng-if="order.BillAddress.Country != 'US'">{{order.BillAddress.Country}}</div>
+                    </address>
+                </div>
+            </div>
+
+            <div ng-if="!(user.Permissions.contains('HidePricing'))">
+                <div>
+                    <h3>
+                        {{'Order' | r}} {{'Summary' | r}}
+                    </h3>
+                </div>
+                <div>
+                    <p>{{'Subtotal' | r}}:<span style="float: right;">{{order.Subtotal | currency:"$"}}</span></p>
+                    <p>{{'Shipping & Handling' | r}}: <span style="float: right;">{{order.ShippingCost | currency:"$"}}</span></p>
+                    <p>{{'Tax' | r}}: <span style="float: right;">{{order.TaxCost | currency:"$"}}</span></p>
+                    <p ng-if="order.Coupon">{{'Coupon' | r}} ({{order.Coupon.Label}}): <span style="float: right;">{{order.Coupon.OrderDiscount * -1 | currency}}</span></p>
+                    <p>{{'Total' | r}}: <span style="float: right;">{{order.Total | currency:"$"}}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="order-print-view-grid">
+            <div class="order-print-view-line-items">
+                <div>
+                    <h3>
+                        {{(order.LineItems | filter:{IsCollection:false} | filter:{IsIndDoc:false}).length}} {{'Item' + ((order.LineItems | filter:{IsCollection:false} | filter:{IsIndDoc:false}).length > 1 ? 's' : '') | rl}} in this {{'Order' | rl}}
+                    </h3>
+                </div>
+                <div>
+                    <div class="order-print-view-line-items-repeater" ng-repeat="item in order.LineItems | filter:{IsCollection:false} | filter:{IsIndDoc:false}">
+                        <div class="order-print-view-line-items-product">
+                            <p>{{item.Product.Name}}</p>
+                            <ul class="list-group" ng-show="item.Specs | filter:{'CanSetForLineItem':true}.length > 0">
+                                <li class="list-group-item" ng-repeat="spec in item.Specs | filter:{'CanSetForLineItem':true} ">
+                                    <span class="text-info">{{spec.Name}}: </span>
+                                    <span ng-if="spec.ControlType == 'File'"><a ng-href="{{spec.File.Url}}">{{spec.File.OriginalName + Extension}}</a></span></span>
+                                    <span ng-if="spec.ControlType != 'File'">{{spec.Value || '(unspecified)'}}</span>
+                                </li>
+                            </ul>
+                            <div>
+                                <div>
+                                    <p ng-show="hasShipperOnAnyLineItem()">{{item.ShipperName}}</p>
+                                </div>
+                                <div>
+                                    <p ng-show="hasShipAccountOnAnyLineItem()">{{item.ShipAccount}}</p>
+                                </div>
+                            </div>
+                            <div ng-show="item.ShipAddress">
+                                <address>
+                                    <strong> {{'Ship to' | r}}:</strong><br>
+                                    <span ng-show="item.ShipFirstName || item.ShipLastName">{{item.ShipFirstName}} {{item.ShipLastName}}</span>
+                                    {{item.ShipAddress.Street1}}<br>
+                                    {{item.ShipAddress.Street2}}<br ng-show="item.ShipAddress.Street2">
+                                    {{item.ShipAddress.City}}, {{item.ShipAddress.State}} {{item.ShipAddress.Zip}}
+                                </address>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <div ng-if="!(user.Permissions.contains('HidePricing'))">
+                                    {{'Unit Price' | r}}: {{item.UnitPrice | currency}}
+                                </div>
+                                <div>
+                                    {{'Quantity' | r}}: {{item.Quantity}}
+                                </div>
+                                <div ng-if="!(user.Permissions.contains('HidePricing'))">
+                                    {{'Line Total' | r}}: {{item.LineTotal | currency}}
+                                </div>
+                            </div>
+                            <div>
+                                <div ng-if="user.Permissions.contains('DateNeededRequired') || user.Permissions.contains('DateNeededOptional')">
+                                    <p ng-show="item.DateNeeded">{{'Date Needed' | r}}: {{item.DateNeeded | date: 'MM/dd/yy'}}</p>
+                                </div>
+                                <div ng-if="user.Permissions.contains('CostCenterPerLine')">
+                                    <p ng-show="item.CostCenter">{{'Cost Center' | r}}: {{item.CostCenter}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-show="item.TotalShipped">{{'Quantity' | r}} {{'Shipped' | r}}: {{item.TotalShipped}}</div>
+                    </div>
+                </div>
+                <div>
+                    <h3>
+                        {{(order.LineItems | filter:{IsCollection:true}).length}} {{'Collection' + ((order.LineItems | filter:{IsCollection:true}).length > 1 ? 's' : '') | rl}} in this {{'Order' | rl}}
+                    </h3>
+                </div>
+                <div>
+                    <div class="order-print-view-line-items-repeater" ng-repeat="item in order.LineItems | filter:{IsCollection:true}">
+                        <div class="order-print-view-line-items-product">
+                            <p>{{item.Variant.ExternalID}}</p>
+                            <div>
+                                <div>
+                                    <p ng-show="hasShipperOnAnyLineItem()">{{item.ShipperName}}</p>
+                                </div>
+                                <div>
+                                    <p ng-show="hasShipAccountOnAnyLineItem()">{{item.ShipAccount}}</p>
+                                </div>
+                            </div>
+                            <div ng-show="item.ShipAddress">
+                                <address>
+                                    <strong> {{'Ship to' | r}}:</strong><br>
+                                    <span ng-show="item.ShipFirstName || item.ShipLastName">{{item.ShipFirstName}} {{item.ShipLastName}}</span>
+                                    {{item.ShipAddress.Street1}}<br>
+                                    {{item.ShipAddress.Street2}}<br ng-show="item.ShipAddress.Street2">
+                                    {{item.ShipAddress.City}}, {{item.ShipAddress.State}} {{item.ShipAddress.Zip}}
+                                </address>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <div ng-if="!(user.Permissions.contains('HidePricing')) && item.UnitPrice > 0">
+                                    {{'Unit Price' | r}}: {{item.UnitPrice | currency}}
+                                </div>
+                                <div ng-if="!(user.Permissions.contains('HidePricing')) && item.LineTotal > 0">
+                                    {{'Line Total' | r}}: {{item.LineTotal | currency}}
+                                </div>
+                            </div>
+                            <div>
+                                <div ng-if="user.Permissions.contains('DateNeededRequired') || user.Permissions.contains('DateNeededOptional')">
+                                    <p ng-show="item.DateNeeded">{{'Date Needed' | r}}: {{item.DateNeeded | date: 'MM/dd/yy'}}</p>
+                                </div>
+                                <div ng-if="user.Permissions.contains('CostCenterPerLine')">
+                                    <p ng-show="item.CostCenter">{{'Cost Center' | r}}: {{item.CostCenter}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-show="item.TotalShipped">{{'Quantity' | r}} {{'Shipped' | r}}: {{item.TotalShipped}}</div>
+                    </div>
+                </div>
+                <div>
+                    <h3>
+                        {{(order.LineItems | filter:{IsIndDoc:true}).length}} {{'Document' + ((order.LineItems | filter:{IsIndDoc:true}).length > 1 ? 's' : '') | rl}} in this {{'Order' | rl}}
+                    </h3>
+                </div>
+                <div>
+                    <div class="order-print-view-line-items-repeater" ng-repeat="item in order.LineItems | filter:{IsIndDoc:true}">
+                        <div class="order-print-view-line-items-product">
+                            <p>{{item.Variant.ExternalID}}</p>
+                            <div>
+                                <div>
+                                    <p ng-show="hasShipperOnAnyLineItem()">{{item.ShipperName}}</p>
+                                </div>
+                                <div>
+                                    <p ng-show="hasShipAccountOnAnyLineItem()">{{item.ShipAccount}}</p>
+                                </div>
+                            </div>
+                            <div ng-show="item.ShipAddress">
+                                <address>
+                                    <strong> {{'Ship to' | r}}:</strong><br>
+                                    <span ng-show="item.ShipFirstName || item.ShipLastName">{{item.ShipFirstName}} {{item.ShipLastName}}</span>
+                                    {{item.ShipAddress.Street1}}<br>
+                                    {{item.ShipAddress.Street2}}<br ng-show="item.ShipAddress.Street2">
+                                    {{item.ShipAddress.City}}, {{item.ShipAddress.State}} {{item.ShipAddress.Zip}}
+                                </address>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <div ng-if="!(user.Permissions.contains('HidePricing')) && item.UnitPrice > 0">
+                                    {{'Unit Price' | r}}: {{item.UnitPrice | currency}}
+                                </div>
+                                <div ng-if="!(user.Permissions.contains('HidePricing')) && item.LineTotal > 0">
+                                    {{'Line Total' | r}}: {{item.LineTotal | currency}}
+                                </div>
+                            </div>
+                            <div>
+                                <div ng-if="user.Permissions.contains('DateNeededRequired') || user.Permissions.contains('DateNeededOptional')">
+                                    <p ng-show="item.DateNeeded">{{'Date Needed' | r}}: {{item.DateNeeded | date: 'MM/dd/yy'}}</p>
+                                </div>
+                                <div ng-if="user.Permissions.contains('CostCenterPerLine')">
+                                    <p ng-show="item.CostCenter">{{'Cost Center' | r}}: {{item.CostCenter}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-show="item.TotalShipped">{{'Quantity' | r}} {{'Shipped' | r}}: {{item.TotalShipped}}</div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div ng-show="order.Approvals" class="order-print-approval-rule-status-summary">
+                <div>
+                    <h3>{{'Approvals' | r}}</h3>
+                </div>
+                <div>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>{{'Rule Summary' | r}}</th>
+                            <th>{{'Approver' | r}}</th>
+                            <th>{{'Status' | r}}</th>
+                        </tr>
+                        </thead>
+                        <tbody class="order-print-approval-rule-summary-rule" ng-repeat="rule in order.Approvals">
+                        <tr ng-class="{approved: rule.Status == 'Approved', declined: rule.Status == 'Declined'}">
+                            <td><div ng-repeat="summary in rule.Summary">{{summary}}</div></td>
+                            <td ng-hide="rule.ApprovedByUserName">
+                                <span>{{rule.ApprovingPartyName}}</span>
+                            <td>
+                                <strong>{{rule.Status}}</strong><span ng-show="rule.ApprovedByUserName"> by </span>{{rule.ApprovedByUserName}}<span ng-show="rule.ApprovedByUserName"> on {{rule.TimeStamp | date:'short'}}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" data-ng-bind="rule.Comments"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

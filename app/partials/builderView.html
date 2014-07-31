@@ -1,0 +1,30 @@
+<section>
+    <loadingindicator ng-show="LoadingDocuments" tag="collections-loading" title="Please wait while we load all documents"/>
+    <loadingindicator ng-show="GeneratingCollection" tag="collections-loading" title="Please wait while build your proposal"/>
+    <div ng-show="!LoadingDocuments">
+        <div class="col-md-2" ng-include="'partials/builderFilters.html'" ng-hide="VariablesStore.mobileView != '0' && VariablesStore.isMobile"></div>
+        <div id="builder-document-list" class="col-md-5" ng-include="'partials/builderDocuments.html'" ng-hide="VariablesStore.mobileView != '1' && VariablesStore.isMobile"></div>
+        <div class="col-md-5" ng-include="'partials/builderCollection.html'" ng-hide="VariablesStore.mobileView != '2' && VariablesStore.isMobile"></div>
+        <div class="navbar-fixed-bottom hidden-xs hidden-sm">
+            <ul>
+                <li>
+                    <button class="btn btn-danger" ng-click="cancelCollection()"><small>{{'Discard' | r}} {{'Proposal' | rc}}</small></button>
+                </li>
+                <li>
+                    <button class="btn btn-primary" ng-click="cacheCollection()">
+                        <loadingindicator  ng-show="displayLoadingIndicator" />
+                        <small>{{'Save' | r}} {{'Changes' | r}}</small>
+                    </button>
+                </li>
+                <li>
+                    <button class="btn btn-success" ng-show="!Collection.EditingLineItem" ng-click="generateCollection()" ng-class="{'btn-warning': Collection.SelectedDocuments.length == 0 || !Collection.Title}" ng-disabled="Collection.SelectedDocuments.length == 0 || !Collection.Title">
+                        <span>{{Collection.Editing ? 'Update' : 'Generate' | r}} {{'Proposal' | rc}} {{window.outerWidth}}</span>
+                    </button>
+                    <button class="btn btn-success" ng-show="Collection.EditingLineItem" ng-click="generateCollection()" ng-class="{'btn-warning': Collection.SelectedDocuments.length == 0 || !Collection.Title}" ng-disabled="Collection.SelectedDocuments.length == 0 || !Collection.Title">
+                        <span>{{'Update' | r}} {{'Line Item' | rc}} {{window.outerWidth}}</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</section>

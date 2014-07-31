@@ -1,0 +1,72 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title">Find a {{'document' | r}}:</h4>
+    </div>
+    <div class="panel-body">
+        <input class="form-control document-list-search" placeholder="Search {{'document' | r}}s..." ng-model="VariablesStore.keyword" />
+        <div class="row view-form-icon document-list-dr">
+            <div class="col-md-6">
+                <label>{{'Start' | r}} {{'Date' | r}}</label>
+                <div class="btn btn-default btn-block btn-date hidden-lg hidden-md"
+                     ng-click="$event.preventDefault();$event.stopPropagation();startopened = !startopened;"
+                     style="margin:0; height:40px; padding-top:8px;">
+                    {{VariablesStore.fromdate ? "" : "Tap"}}
+                    <span class="text-info">{{VariablesStore.fromdate | date:'M/dd/yy'}}</span>
+                </div>
+                <input placeholder="{{'Start' | r}} {{'Date' | r}}" ng-model="VariablesStore.fromdate"
+                       ng-change="span = null;"
+                       type="text"
+                       class="form-control"
+                       datepicker-popup="MM/dd/yy"
+                       is-open="startopened"
+                       min="minDate"/>
+                <i class="fa fa-calendar"></i>
+            </div>
+            <div class="col-md-6">
+                <label>{{'End' | r}} {{'Date' | r}}</label>
+                <div class="btn btn-default btn-block btn-date hidden-lg hidden-md"
+                     ng-click="$event.preventDefault();$event.stopPropagation();endopened = !startopened;"
+                     style="margin:0; height:40px; padding-top:8px;">
+                    {{VariablesStore.todate ? "" : "Tap"}}
+                    <span class="text-info">{{VariablesStore.todate | date:'M/dd/yy'}}</span>
+                </div>
+                <input placeholder="{{'End' | r}} {{'Date' | r}}" ng-model="VariablesStore.todate"
+                       ng-change="span = null;"
+                       type="text"
+                       class="form-control"
+                       datepicker-popup="MM/dd/yy"
+                       is-open="endopened"
+                       min="fromdate"/>
+                <i class="fa fa-calendar"></i>
+            </div>
+        </div>
+        <div class="filter-list">
+            <ul class="list-group">
+                <li class="list-group-item list-group-item-info" ng-show="FavoriteDocumentsEnabled && FavoriteDocuments.length > 0" ng-click="updateFavoriteDocFilter()">
+                    <i class="fa pull-right" ng-class="{'fa-star':favoriteDocs}" style="color:#B78733;"></i>
+                    Favorite Documents
+                </li>
+            </ul>
+        </div>
+        <div class="filter-list">
+            <ul class="list-group">
+                <li class="list-group-item" ng-repeat="filter in DocumentList.Filters" ng-click="filterSelect(filter)">
+                    <i class="fa pull-right" ng-class="{'text-success fa-check':(selectedCategories.indexOf(filter) > -1)}"></i>
+                    {{filter}}
+                </li>
+            </ul>
+        </div>
+        <div class="btn btn-block btn-default" ng-click="clearFilters()" style="margin-top:10px;">
+            Clear Filters
+        </div>
+    </div>
+</div>
+<div class="navbar-fixed-bottom hidden-md hidden-lg">
+    <ul>
+        <li>
+            <button class="btn btn-success" ng-click="VariablesStore.mobileView = '1'">
+                <span>{{'Browse' | r}} {{'documents' | r}} {{window.outerWidth}}</span>
+            </button>
+        </li>
+    </ul>
+</div>

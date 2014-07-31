@@ -1,0 +1,168 @@
+<div class="collection-list-item cover-letter-placeholder">
+    <div class="actions text-right">
+        <div class="btn btn-sm btn-warning btn-block" ng-show="!Collection.TitleStatus.Editing" ng-click="Collection.TitleStatus.Editing = true">Edit {{'Title' | r}} <i class="fa fa-edit"></i></div>
+        <div class="btn btn-sm btn-primary btn-block" ng-show="Collection.TitleStatus.Editing" ng-click="Collection.TitleStatus.Editing = false">Save {{'Title' | r}}</div>
+    </div>
+    <div class="manual-fade-container-inverse" ng-class="{'manual-fade':Collection.TitleStatus.Editing}">
+        <div class="document-title text-center" ng-class="{'text-danger':!Collection.Title}">{{Collection.Title || (("Proposal" | r) + ' Title')}}</div>
+    </div>
+    <div class="cover-letter-form" collapse="!Collection.TitleStatus.Editing">
+        <div class="manual-fade-container" ng-class="{'manual-fade':Collection.TitleStatus.Editing}">
+            <div class="document-title">
+                <input class="form-control" placeholder="{{'Proposal' | r}} Title" type="text" ng-model="Collection.Title" required />
+            </div>
+        </div>
+    </div>
+</div>
+<div class="collection-list-item cover-letter-placeholder" ng-show="ExtraDocuments['COVERLETTER']">
+    <div class="actions text-right">
+        <div class="btn btn-sm btn-primary btn-block" ng-show="(!Collection.CoverLetter.Title) && (!Collection.CoverLetter.Editing)" ng-click="Collection.CoverLetter.Editing = true"><i class="fa fa-plus-circle"></i> Add</div>
+        <div class="btn btn-sm btn-danger btn-block" style="margin-top:0px;" ng-show="(Collection.CoverLetter.Title) && (!Collection.CoverLetter.Editing)" ng-click="removeCoverLetter()">Delete</div>
+        <div class="btn btn-sm btn-warning btn-block" style="margin-top:0px;" ng-show="Collection.CoverLetter.Editing" ng-click="cancelCoverLetter()">Cancel</div>
+        <div class="btn btn-sm btn-primary btn-block" ng-show="(Collection.CoverLetter.Title) && (Collection.CoverLetter.Editing)" ng-click="saveCoverLetter()">Save</div>
+        <div class="btn btn-sm btn-warning btn-block" ng-show="Collection.CoverLetter.Title && !Collection.CoverLetter.Editing" ng-click="Collection.CoverLetter.Editing = true">Edit {{'Specs' | r}} <i class="fa fa-edit"></i></div>
+    </div>
+
+    <div class="manual-fade-container-inverse" ng-class="{'manual-fade':Collection.CoverLetter.Editing}">
+        <div class="document-title">{{Collection.CoverLetter.Title ? Collection.CoverLetter.Title : 'No Cover Letter'}}</div>
+        <div class="spec-info-preview text-danger" ng-show="Collection.CoverLetter.Title && Collection.CoverLetter.SpecValueCount < objectLength(Collection.CoverLetter.Specs)">{{Collection.CoverLetter.SpecValueCount}} of {{objectLength(Collection.CoverLetter.Specs)}} {{'field' + (objectLength(Collection.CoverLetter.Specs) > 1 ? 's' : '')}} completed</div>
+        <div class="spec-info-preview text-success" ng-show="Collection.CoverLetter.Title && Collection.CoverLetter.SpecValueCount == objectLength(Collection.CoverLetter.Specs)"><i class="fa fa-check"></i> All {{'field' + (objectLength(Collection.CoverLetter.Specs) > 1 ? 's' : '')}} completed</div>
+    </div>
+
+    <div class="cover-letter-form" collapse="!Collection.CoverLetter.Editing">
+        <div class="manual-fade-container" ng-class="{'manual-fade':Collection.CoverLetter.Editing}">
+            <div class="document-title">
+                <input class="form-control" placeholder="Cover Letter Title" ng-model="Collection.CoverLetter.Title" />
+            </div>
+            <div class="document-extra-specs">
+                <div ng-repeat="spec in Collection.CoverLetter.Specs" class="view-form-icon" ng-if="spec.Label.indexOf('RM') == -1">
+                    <div>
+                        <label>{{spec.Label}}</label>
+                        <input class="form-control" type="text" ng-model="spec.Value" ng-if="spec.Label.toLowerCase().indexOf('date') == -1" />
+                        <input name="dateneeded" ng-model="spec.Value" ng-required="digitalProduct" ng-if="spec.Label.toLowerCase().indexOf('date') > -1"
+                               type="text"
+                               class="form-control hidden-sm hidden-xs"
+                               datepicker-popup="MM/dd/yy"
+                               data-placement="top"
+                               is-open="opened"
+                               min="currentDate"/>
+                        <i class="fa fa-pencil-square"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="collection-container">
+    <div class="collection-scrollbox">
+        <ul ui-sortable="sortableOptions" ng-model="Collection.SelectedDocuments">
+            <li ng-repeat="document in Collection.SelectedDocuments" collapse="!document.Selected">
+                <div class="btn btn-xs btn-default text-center" ng-click="addDivider($index)" ng-show="document.ShowDividerBtn" style="position: absolute; left: 40%; z-index:200;margin-top:-13px;"><i class="fa fa-plus-circle"></i> Add Divider</div>
+                <div class="collection-list-item collection-document" ng-show="document.Type == 'document'">
+                    <div class="actions text-right">
+                        <div class="btn btn-sm btn-danger btn-block" ng-click="updateCollection(document);">Remove</div>
+                        <div class="btn btn-sm btn-warning btn-block" ng-hide="document.Editing || !document.Specs" ng-click="editSpecs(document);">Edit {{'Specs' | r}} <i class="fa fa-edit"></i></div>
+                        <div class="btn btn-sm btn-warning btn-block" ng-show="document.Editing" ng-click="document.Editing = false; cancelEditSpecs(document)">Cancel</div>
+                        <div class="btn btn-sm btn-block btn-primary" style="position:absolute; bottom:10px;" ng-show="document.Editing" ng-click="document.Editing = false;cacheCollection();">Save</div>
+                    </div>
+                    <div class="info-bar">
+                        <p>{{document.StaticSpecGroups.DateLastUpdated.Specs[0].Value}}</p>
+                        <p>{{document.StaticSpecGroups.Category.Specs[0].Value}}</p>
+                    </div>
+                    <div class="document-title pull-left"><i class="fa fa-bars text-muted"></i> {{document.Name}}</div>
+                    <div style="clear:both;"></div>
+                    <div class="document-extra-specs" collapse="!document.Editing">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div ng-repeat="spec in document.Specs" class="view-form-icon" ng-if="spec.Name != 'Photo' && isEven($index)">
+                                    <div ng-if="spec.Name.toLowerCase().indexOf('email') == -1 && spec.Name.toLowerCase().indexOf('phone') == -1">
+                                        <label>{{spec.Label}}</label>
+                                        <input type="text" class="form-control" ng-model="Collection.Specs[spec.Name].Value" />
+                                        <i class="fa fa-pencil-square"></i>
+                                    </div>
+                                    <div ng-if="spec.Name.toLowerCase().indexOf('email') > -1">
+                                        <label>{{spec.Label}}</label>
+                                        <input type="email" class="form-control" ng-model="Collection.Specs[spec.Name].Value" />
+                                        <i class="fa fa-envelope"></i>
+                                    </div>
+                                    <div ng-if="spec.Name.toLowerCase().indexOf('phone') > -1">
+                                        <label>{{spec.Label}}</label>
+                                        <input type="text" class="form-control" ng-model="Collection.Specs[spec.Name].Value" ui-mask="(999) 999-9999" />
+                                        <i class="fa fa-phone-square"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div ng-repeat="spec in document.Specs" class="view-form-icon" ng-if="spec.Name != 'Photo' && !isEven($index)">
+                                    <div ng-if="spec.Name.toLowerCase().indexOf('email') == -1 && spec.Name.toLowerCase().indexOf('phone') == -1">
+                                        <label>{{spec.Label}}</label>
+                                        <input type="text" class="form-control" ng-model="Collection.Specs[spec.Name].Value" />
+                                        <i class="fa fa-pencil-square"></i>
+                                    </div>
+                                    <div ng-if="spec.Name.toLowerCase().indexOf('email') > -1">
+                                        <label>{{spec.Label}}</label>
+                                        <input type="email" class="form-control" ng-model="Collection.Specs[spec.Name].Value" ng-pattern="/^(([^<>()[\]\\.,;:\s@\']+(\.[^<>()[\]\\.,;:\s@\']+)*)|(\'.+\'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/" />
+                                        <i class="fa fa-envelope"></i>
+                                    </div>
+                                    <div ng-if="spec.Name.toLowerCase().indexOf('phone') > -1">
+                                        <label>{{spec.Label}}</label>
+                                        <input type="text" class="form-control" ng-model="Collection.Specs[spec.Name].Value" ui-mask="(999) 999-9999" />
+                                        <i class="fa fa-phone-square"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-repeat="spec in document.Specs" class="view-form-icon" ng-if="spec.Name == 'Photo'">
+                            <div>
+                                <label>{{spec.Label}}</label>
+                                <customfilefield customfield="spec"></customfilefield>
+                            </div>
+                        </div>
+                        <div style="clear:both;"></div>
+                    </div>
+                </div>
+                <div class="collection-list-item cover-letter-placeholder divider-page" style="cursor:ns-resize;" ng-show="document.Type == 'divider'">
+                    <div class="actions text-right">
+                        <div class="btn btn-sm btn-danger btn-block" ng-click="updateCollection(document);">Remove</div>
+                        <div class="btn btn-sm btn-warning btn-block" ng-show="!document.DividerStatus.Editing" ng-click="document.DividerStatus.Editing = true">Edit <i class="fa fa-edit"></i></div>
+                        <div class="btn btn-sm btn-primary btn-block" ng-show="document.DividerStatus.Editing" ng-click="document.DividerStatus.Editing = false">Save</div>
+                    </div>
+                    <div class="info-bar">
+                        <p style="float:none;">Divider Page</p>
+                    </div>
+                    <div style="margin-top:10px;">
+                        <div class="manual-fade-container-inverse" ng-class="{'manual-fade':document.DividerStatus.Editing}">
+                            <div class="document-title" ng-class="{'text-danger':!document.Headline}"><i class="fa fa-bars text-muted"></i> {{document.Headline || 'Divider Headline'}}</div>
+                        </div>
+                        <div class="cover-letter-form" collapse="!document.DividerStatus.Editing">
+                            <div class="manual-fade-container" ng-class="{'manual-fade':document.DividerStatus.Editing}">
+                                <div class="document-title">
+                                    <input class="form-control" placeholder="Divider Headline" type="text" ng-model="document.Headline" required />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="alert alert-info text-center" ng-show="Collection.SelectedDocuments.length == 0">
+        Add a document to begin designing your {{'proposal' | r}}.
+    </div>
+</div>
+
+<div class="navbar-fixed-bottom hidden-md hidden-lg">
+    <ul>
+        <li style="width:50%;">
+            <button class="btn btn-default" ng-click="VariablesStore.mobileView = '1'">
+                <span>Add more {{'document' | rc}}s</span>
+            </button>
+        </li>
+        <li>
+            <button class="btn btn-success" ng-click="generateCollection()" ng-disabled="Collection.SelectedDocuments.length == 0">
+                <span>{{Collection.Editing ? 'Update' : 'Generate' | r}} {{'Collection' | rc}} {{window.outerWidth}}</span>
+            </button>
+        </li>
+    </ul>
+</div>

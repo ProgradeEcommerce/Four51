@@ -1,0 +1,127 @@
+.document-list-item{
+  padding:12px;
+  background-color:#f2f2f2;
+  border-top:1px solid #ddd;
+  overflow:hidden;
+  &:last-of-type{
+    border-bottom:1px solid #ddd;
+  }
+  p{
+    margin:0;
+    .label{
+      vertical-align: middle;
+    }
+  }
+  i{
+    cursor: pointer;
+    &.fa-star{
+      color: #b78733;
+    }
+    &.fa-2x{
+      padding:0 10px;
+      transition:all 200ms;
+      -webkit-transition:all 200ms;
+      -mox-transition:all 200ms;
+      &.fa-eye:hover{color:@brand-info;}
+      &.fa-download:hover{color:@brand-success;}
+      &.fa-shopping-cart:hover{color:@brand-danger;}
+      &.fa-plus:hover,
+      &.fa-plus-circle:hover{color:@brand-primary;}
+    }
+  }
+  .document-preview{
+    border:1px solid #ddd;
+    .border-top-radius(@border-radius-base);
+    .border-bottom-radius(@border-radius-base);
+    overflow:hidden;
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.075);
+  }
+}
+//== Media queries breakpoints
+//** phone < 618px
+@media (max-width: @screen-xs-max) {
+  .document-list-item {
+    .document-title{
+      text-align: center;
+      font-weight:bold;
+      i{
+        font-weight:normal;
+        font-size:1.25em;
+        float:left;
+      }
+    }
+    .category-label{
+      text-align:center;
+    }
+  }
+}
+
+//** tablet portrait < 768px
+@media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+  .document-list-item {
+    .document-title{
+      text-align: center;
+      font-weight:bold;
+      i{
+        font-weight:normal;
+        font-size:1.25em;
+        float:left;
+      }
+    }
+    .category-label{
+      text-align:center;
+    }
+  }
+}
+
+//** tablet landscape & desktop  < 1024p
+@media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+  .document-list-item{
+    .more-actions{
+      position:absolute;
+      right:0;
+      left:50%;
+      top:-100%;
+      bottom:100%;
+      background-color:#f2f2f2;
+      opacity:0;
+      transition:opacity 500ms, top 0ms 500ms, bottom 0ms 500ms;
+      -webkit-transition:opacity 500ms, top 0ms 500ms, bottom 0ms 500ms;
+      -moz-transition:opacity 500ms, top 0ms 500ms, bottom 0ms 500ms;
+      &.show{
+        top:0;
+        bottom:0;
+        opacity:1;
+        transition:all 200ms;
+        -webkit-transition:all 200ms;
+        -moz-transition:all 200ms;
+      }
+    }
+  }
+}
+
+//** desktops > 1200px
+@media (min-width: @screen-lg-min){
+  .document-list-item{
+    .more-actions{
+      position:absolute;
+      right:0;
+      left:50%;
+      top:-100%;
+      bottom:100%;
+      background-color:#f2f2f2;
+      opacity:0;
+      transition:opacity 500ms, top 0ms 500ms, bottom 0ms 500ms;
+      -webkit-transition:opacity 500ms, top 0ms 500ms, bottom 0ms 500ms;
+      -moz-transition:opacity 500ms, top 0ms 500ms, bottom 0ms 500ms;
+      &.show{
+        top:0;
+        bottom:0;
+        opacity:1;
+        transition:all 200ms;
+        -webkit-transition:all 200ms;
+        -moz-transition:all 200ms;
+      }
+    }
+  }
+}
